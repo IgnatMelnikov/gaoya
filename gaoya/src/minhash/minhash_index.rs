@@ -316,7 +316,7 @@ where
 pub struct MinHashIndex<T, Id, C = HashSetContainer<Id>>
 where
     T: MinHashType,
-    Id: Hash + Eq + Clone,
+    Id: Hash + Eq + Clone + PartialOrd,
     C: IdContainer<Id>
 {
     bands: Vec<MinHashBand<T, Id, C>>,
@@ -330,7 +330,7 @@ where
 impl<T, Id, C> fmt::Display for MinHashIndex<T, Id, C>
 where
     T: MinHashType,
-    Id: Hash + Eq + Clone,
+    Id: Hash + Eq + Clone + PartialOrd,
     C: IdContainer<Id>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -343,7 +343,7 @@ where
 impl<T, Id> MinHashIndex<T, Id>
     where
         T: MinHashType,
-        Id: Hash + Eq + Clone + Send + Sync
+        Id: Hash + Eq + Clone + Send + Sync + PartialOrd
 {
     /// Create a new MinHashIndex
     pub fn new(num_bands: usize, band_width: usize, jaccard_threshold: f64) -> Self {
@@ -355,7 +355,7 @@ impl<T, Id> MinHashIndex<T, Id>
 impl<T, Id, C> MinHashIndex<T, Id, C>
 where
     T: MinHashType,
-    Id: Hash + Eq + Clone,
+    Id: Hash + Eq + Clone + PartialOrd,
     C: IdContainer<Id>
 {
     /// Create a new MinHashIndex
@@ -639,6 +639,15 @@ where
         result
     }
 
+    pub fn has_duplicates_with_lower_id(&self, id: &Id, signature: &[T]) -> bool {
+        assert_eq!(self.num_hashes(), signature.len());
+        let mut match_ids = HashSet::with_capacity(10);
+        for band in &self.bands {
+            band.query(signature, &mut match_ids);
+        }
+
+        match_ids.into_iter().any(|matched_id| matched_id < id)
+    }
 
     pub fn query_top_k(&self, query_signature: &[T], k: usize) -> Vec<(Id, f64)> {
         let mut match_ids = HashSet::with_capacity(10);
@@ -823,7 +832,7 @@ pub struct BandStats {
 impl<T, Id, C> QueryIndex for MinHashIndex<T, Id, C>
     where
         T: MinHashType ,
-        Id: Hash + Eq + Clone,
+        Id: Hash + Eq + Clone + PartialOrd,
         C: IdContainer<Id>{
     type Id = Id;
 
