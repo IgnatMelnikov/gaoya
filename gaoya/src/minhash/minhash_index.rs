@@ -651,7 +651,11 @@ where
             band.query(signature, &mut match_ids);
         }
         
-        match_ids.into_iter().any(|matched_id| matched_id < id)
+        match_ids.into_iter().any(|matched_id| 
+            matched_id.0 < id.0 ||
+            matched_id.0 == id.0 && matched_id.1 < id.1)
+            // matched_id < id)
+        // )
     }
 
     pub fn query_top_k(&self, query_signature: &[T], k: usize) -> Vec<(Id, f64)> {
