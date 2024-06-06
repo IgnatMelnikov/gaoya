@@ -1105,7 +1105,7 @@ mod tests {
 
     }
 
-    This test addresses issue #19 - Duplicate ids causes panic
+   //  This test addresses issue #19 - Duplicate ids causes panic
     #[test]
     pub fn test_duplidate_ids() {
         let (b, r) = calculate_minhash_params(0.5, 200);
