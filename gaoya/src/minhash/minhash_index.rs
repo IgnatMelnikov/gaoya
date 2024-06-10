@@ -827,14 +827,42 @@ where
         assert_eq!(self.num_hashes, signature.len());
         let mut match_ids = HashSet::with_capacity(10);
         for band in &self.bands {
-            band.query(signature, &mut match_ids);
+            band.query_to_owned(signature, &mut match_ids);
         }
 
-        match_ids.into_iter().any(|matched_id| 
-            matched_id.0 < id.0 ||
-            (matched_id.0 == id.0 && matched_id.1 < id.1))
+        for matched_id in match_ids.into_iter(){
+            let matched_sig = &self.id_signatures[&matched_id];
+            let similarity = compute_minhash_similarity(signature, matched_sig);            
+            if (matched_id.0 < id.0 || (matched_id.0 == id.0 && matched_id.1 < id.1)) && similarity >= self.threshold{
+                return true;
+            }
+        }
+        return false;
+        
     }
 }
+
+
+// pub fn query_owned_return_similarity(&self, query_signature: &[T]) -> Vec<(Id, f64)>
+// where
+//     Id: Hash + Eq + Clone,
+// {
+// let mut match_ids = HashSet::with_capacity(10);
+// for band in &self.bands {
+//     band.query_to_owned(query_signature, &mut match_ids);
+// }
+// let mut result = Vec::new();
+// for id in match_ids.into_iter() {
+//     let signature = &self.id_signatures[&id];
+//     let similarity = compute_minhash_similarity(signature, query_signature);
+//     if similarity >= self.threshold {
+//         result.push((id, similarity))
+//     }
+// }
+// result.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+// result
+// }
 
 #[derive(Debug)]
 pub struct BandStats {
