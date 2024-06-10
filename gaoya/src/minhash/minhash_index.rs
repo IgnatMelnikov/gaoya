@@ -830,7 +830,7 @@ where
             let mut match_ids = HashSet::with_capacity(10);
             band.query_to_owned(signature, &mut match_ids);
             for matched_id in match_ids.into_iter(){
-                
+
                 if (matched_id.0 < id.0 || (matched_id.0 == id.0 && matched_id.1 < id.1)){
                     let matched_sig = &self.id_signatures[&matched_id];
                     let similarity = compute_minhash_similarity(signature, matched_sig);
@@ -840,7 +840,6 @@ where
                 }
                     
             }
-            return false;
         }
 
         
