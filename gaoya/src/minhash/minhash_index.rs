@@ -825,13 +825,14 @@ where
 {
     pub fn has_duplicates_with_lower_id(&self, id: &(u64, u64), signature: &[T]) -> bool {
         assert_eq!(self.num_hashes, signature.len());
-        
+
         for band in &self.bands {
             let mut match_ids = HashSet::with_capacity(10);
             band.query_to_owned(signature, &mut match_ids);
             for matched_id in match_ids.into_iter(){
-                let matched_sig = &self.id_signatures[&matched_id];
+                
                 if (matched_id.0 < id.0 || (matched_id.0 == id.0 && matched_id.1 < id.1)){
+                    let matched_sig = &self.id_signatures[&matched_id];
                     let similarity = compute_minhash_similarity(signature, matched_sig);
                     if similarity >= self.threshold {
                         return true;
