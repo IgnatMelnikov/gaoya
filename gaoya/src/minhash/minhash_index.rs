@@ -870,6 +870,28 @@ where
     
         (false, first, second)
     }
+
+    pub fn has_duplicates_with_lower_id_0(&self, id: &(u64, u64), signature: &[T]) -> bool {
+        for band in &self.bands {
+            let mut match_ids = HashSet::with_capacity(10);
+            band.query(signature, &mut match_ids);
+            for matched_id in match_ids.into_iter(){
+
+                if (matched_id.0 < id.0 || (matched_id.0 == id.0 && matched_id.1 < id.1)){
+                    let matched_sig = &self.id_signatures[&matched_id];
+                    let similarity = compute_minhash_similarity(signature, matched_sig);
+                    if similarity >= self.threshold {
+                        return true;
+                    }
+                }
+                    
+            }
+        }
+
+        
+        return false;
+        
+    }
     
 
 }
