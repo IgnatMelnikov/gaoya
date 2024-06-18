@@ -855,7 +855,7 @@ where
         
     }
 
-    pub fn has_duplicates_with_lower_id_stat(&self, id: &(u64, u64), signature: &[T]) -> (u64, u64, u64, u64) {
+    pub fn has_duplicates_with_lower_id_stat(&self, id: &(u64, u64), signature: &[T]) -> (bool, u64, u64, u64, u64) {
         assert_eq!(self.num_hashes, signature.len());
         let mut first = 0;
         let mut second = 0;
@@ -872,13 +872,13 @@ where
                     let matched_sig = &self.id_signatures[&matched_id];
                     let similarity = compute_minhash_similarity(signature, matched_sig);
                     if similarity >= self.threshold {
-                        return (1, first, second, third);
+                        return (true, first, second, third, 1);
                     }
                 }
             }
         }
     
-        (0, first, second, third)
+        (false, first, second, third, 0)
     }
 
     pub fn has_duplicates_with_lower_id_0(&self, id: &(u64, u64), signature: &[T]) -> bool {
