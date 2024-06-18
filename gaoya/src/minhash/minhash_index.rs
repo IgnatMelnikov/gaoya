@@ -17,6 +17,8 @@ use itertools::Itertools;
 use crate::clustering::QueryIndex;
 use crate::minhash::id_container::{HashSetContainer, IdContainer};
 
+use super::VecContainer;
+
 
 /// BandKey contains the hash of the band.
 /// Using the hash of the band instead of the whole band slice will not decrease
@@ -354,6 +356,12 @@ impl<T, Id> MinHashIndex<T, Id>
     pub fn new(num_bands: usize, band_width: usize, jaccard_threshold: f64) -> Self {
         MinHashIndex::<T, Id, HashSetContainer<Id>>::new_index(num_bands, band_width, jaccard_threshold)
     }
+
+    // pub fn new_vec_con(num_bands: usize, band_width: usize, jaccard_threshold: f64) -> Self {
+    //     // _test_remove(&mut MinHashIndex::<_, _, VecContainer<_>>::new_index(4, 2, 0.5));
+    //     MinHashIndex::<T, Id, VecContainer<Id>>::new_index(num_bands, band_width, jaccard_threshold)
+    // }
+
 }
 
 
@@ -847,7 +855,7 @@ where
         
     }
 
-    pub fn has_duplicates_with_lower_id_stat(&self, id: &(u64, u64), signature: &[T]) -> (bool, u64, u64, u64) {
+    pub fn has_duplicates_with_lower_id_stat(&self, id: &(u64, u64), signature: &[T]) -> (u64, u64, u64, u64) {
         assert_eq!(self.num_hashes, signature.len());
         let mut first = 0;
         let mut second = 0;
@@ -864,13 +872,13 @@ where
                     let matched_sig = &self.id_signatures[&matched_id];
                     let similarity = compute_minhash_similarity(signature, matched_sig);
                     if similarity >= self.threshold {
-                        return (true, first, second, third);
+                        return (1, first, second, third);
                     }
                 }
             }
         }
     
-        (false, first, second, third)
+        (0, first, second, third)
     }
 
     pub fn has_duplicates_with_lower_id_0(&self, id: &(u64, u64), signature: &[T]) -> bool {
