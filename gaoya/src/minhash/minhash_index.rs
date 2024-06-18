@@ -263,6 +263,24 @@ where
     }
 }
 
+impl<T, C> MinHashBand<T, (u64, u64), C>
+where
+    T: MinHashType,
+    C: HashSetContainer<(u64, u64)>
+{
+        #[inline]
+        fn query_to_owned_vec(&self, signature: &[T], match_ids: &mut Vec<Id>) {
+            let band_data = &signature[self.band_start..self.band_end];
+            let band_key = BandKey::new(band_data, self.build_ahash.build_hasher());
+            match self.hash_table.get(&band_key) {
+                Some(ids) => {
+                    // extend(self.vec.iter()
+                    match_ids.extend(&ids.vec.iter());
+                }
+                None => (),
+            }
+        }
+}
 /// Data Structure to index minhashes into bands.
 ///
 /// Reference: [Chapter 3, Mining of Massive Datasets](http://www.mmds.org)
@@ -851,6 +869,7 @@ where
         assert_eq!(self.num_hashes, signature.len());
         let mut first = 0;
         let mut second = 0;
+        let mut third = 0;
     
         for band in &self.bands {
             first += 1;
@@ -859,16 +878,17 @@ where
             for matched_id in match_ids.into_iter() {
                 second += 1;
                 if matched_id.0 < id.0 || (matched_id.0 == id.0 && matched_id.1 < id.1) {
+                    third += 1;
                     let matched_sig = &self.id_signatures[&matched_id];
                     let similarity = compute_minhash_similarity(signature, matched_sig);
                     if similarity >= self.threshold {
-                        return (true, first, second);
+                        return (true, first, second, third);
                     }
                 }
             }
         }
     
-        (false, first, second)
+        (false, first, second, third)
     }
 
     pub fn has_duplicates_with_lower_id_0(&self, id: &(u64, u64), signature: &[T]) -> bool {
@@ -893,6 +913,27 @@ where
         
     }
     
+    pub fn has_duplicates_with_lower_id_vec(&self, id: &(u64, u64), signature: &[T]) -> bool {
+        for band in &self.bands {
+            let mut match_ids = Vec::with_capacity(10);
+            band.query(signature, &mut match_ids);
+            for matched_id in match_ids.into_iter(){
+
+                if (matched_id.0 < id.0 || (matched_id.0 == id.0 && matched_id.1 < id.1)){
+                    let matched_sig = &self.id_signatures[&matched_id];
+                    let similarity = compute_minhash_similarity(signature, matched_sig);
+                    if similarity >= self.threshold {
+                        return true;
+                    }
+                }
+                    
+            }
+        }
+
+        
+        return false;
+        
+    }
 
 }
 
