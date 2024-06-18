@@ -865,7 +865,7 @@ where
         
     }
 
-    pub fn has_duplicates_with_lower_id_stat(&self, id: &(u64, u64), signature: &[T]) -> (bool, u64, u64) {
+    pub fn has_duplicates_with_lower_id_stat(&self, id: &(u64, u64), signature: &[T]) -> (bool, u64, u64, u64) {
         assert_eq!(self.num_hashes, signature.len());
         let mut first = 0;
         let mut second = 0;
